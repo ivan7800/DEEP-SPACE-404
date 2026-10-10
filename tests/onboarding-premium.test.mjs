@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const js=readFileSync(new URL('../src/app.mjs',import.meta.url),'utf8');
+const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
+test('welcome and manual controls exist uniquely',()=>{for(const id of ['welcome','welcomeStart','welcomeManual','welcomeRemember','manual','manualClose','helpOpen','guideAction','guideHide','guideTitle','guideDescription','guideProgress'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id)});
+test('new actions have click handlers',()=>{for(const id of ['helpOpen','manualClose','guideAction','guideHide','welcomeStart','welcomeManual'])assert.match(js,new RegExp("\\$\\('"+id+"'\\)\\.addEventListener\\('click'"),id)});
+test('welcome has no forced persistent lock and is dismissible',()=>{assert.match(js,/localStorage\.getItem\(INTRO_KEY\)/);assert.match(js,/\$\('welcome'\)\.close\(\)/);assert.match(html,/id="welcomeRemember"/)});
+test('decorative elements do not intercept interaction and reduced motion is supported',()=>{assert.match(css,/\.welcome-stars\{[^}]*pointer-events:none/);assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);assert.match(css,/\.bridge-viewport:after\{[^}]*pointer-events:none/)});
